@@ -1,0 +1,24 @@
+# Frontend dependencies and build output
+frontend/node_modules/
+frontend/dist/
+frontend/dist-ssr/
+
+# .NET build output and local tooling
+backend/StudentApi/bin/
+backend/StudentApi/obj/
+backend/StudentApi/.vs/
+backend/StudentApi/*.csproj.user
+
+# Local database files
+backend/StudentApi/*.db
+backend/StudentApi/*.db-shm
+backend/StudentApi/*.db-wal
+
+# Editor and OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+*.suo
+*.user
+*.swp
