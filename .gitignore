@@ -17,6 +17,14 @@ backend/StudentApi/*.db-wal
 # Editor and OS files
 .vscode/*
 !.vscode/extensions.json
+.vs/
+**/CopilotSnapshots/
+**/copilot-chat/
+.copilot/
+**/*copilot*.tmp
+**/*copilot*.temp
+**/*prompt*.tmp
+**/*prompt*.temp
 .idea/
 .DS_Store
 *.suo

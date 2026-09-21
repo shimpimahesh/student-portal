@@ -1,0 +1,12 @@
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\bin\Debug\net9.0\StudentApi.Domain.deps.json
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\bin\Debug\net9.0\StudentApi.Domain.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\bin\Debug\net9.0\StudentApi.Domain.pdb
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.GeneratedMSBuildEditorConfig.editorconfig
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.AssemblyInfoInputs.cache
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.AssemblyInfo.cs
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.csproj.CoreCompileInputs.cache
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.sourcelink.json
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\refint\StudentApi.Domain.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\StudentApi.Domain.pdb
+C:\ProjectArea\student-portal\backend\StudentApi.Domain\obj\Debug\net9.0\ref\StudentApi.Domain.dll

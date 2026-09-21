@@ -1,13 +1,64 @@
-using Microsoft.EntityFrameworkCore;
-using StudentApi.Data;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Azure.Security.KeyVault.Secrets;
+using Azure.Extensions.AspNetCore.Configuration.Secrets;
+using Microsoft.OpenApi.Models;
+using StudentApi.Application;
+using StudentApi.Infrastructure;
+using Microsoft.Identity.Web;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Add services to the container.
+var keyVaultUrl = builder.Configuration["AzureKeyVault:VaultUrl"];
 
-builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")
-                      ?? "Data Source=students.db"));
+if (!string.IsNullOrWhiteSpace(keyVaultUrl))
+{
+    if (!Uri.TryCreate(keyVaultUrl, UriKind.Absolute, out var vaultUri) ||
+        vaultUri.Scheme != Uri.UriSchemeHttps)
+    {
+        throw new InvalidOperationException(
+            "AzureKeyVault:VaultUrl must be a valid HTTPS URL.");
+    }
+
+    var credentialType =
+        Type.GetType("Azure.Identity.DefaultAzureCredential, Azure.Identity")
+        ?? throw new InvalidOperationException(
+            "Azure.Identity.DefaultAzureCredential is unavailable.");
+
+    var optionsType =
+        Type.GetType("Azure.Identity.DefaultAzureCredentialOptions, Azure.Identity")
+        ?? throw new InvalidOperationException(
+            "Azure.Identity.DefaultAzureCredentialOptions is unavailable.");
+
+    var options = Activator.CreateInstance(optionsType)
+        ?? throw new InvalidOperationException(
+            "Unable to create DefaultAzureCredentialOptions.");
+
+    var credential = (Azure.Core.TokenCredential)(
+        Activator.CreateInstance(
+            credentialType,
+            new object[] { options })
+        ?? throw new InvalidOperationException(
+            "Unable to create DefaultAzureCredential."));
+
+    var secretClient = new SecretClient(
+        vaultUri,
+        credential);
+
+    builder.Configuration.AddAzureKeyVault(
+        secretClient,
+        new KeyVaultSecretManager());
+}
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddMicrosoftIdentityWebApi(builder.Configuration.GetSection("AzureAd"));
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("RequireAdminRole", policy => policy.RequireRole("Admin"));
+});
+
+builder.Services.AddApplication();
+builder.Services.AddInfrastructure(builder.Configuration);
 
 builder.Services.AddCors(options =>
 {
@@ -20,24 +71,49 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddControllers();
-builder.Services.AddOpenApi();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.SwaggerDoc("v1", new OpenApiInfo
+    {
+        Title = "Student API",
+        Version = "v1"
+    });
+
+    options.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Name = "Authorization",
+        Type = SecuritySchemeType.Http,
+        Scheme = "bearer",
+        BearerFormat = "JWT",
+        In = ParameterLocation.Header,
+        Description = "Enter a JWT token."
+    });
+
+    options.AddSecurityRequirement(new OpenApiSecurityRequirement
+    {
+        {
+            new OpenApiSecurityScheme
+            {
+                Reference = new OpenApiReference
+                {
+                    Type = ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-    db.Database.EnsureCreated();
-}
-
 // Configure the HTTP request pipeline.
-if (app.Environment.IsDevelopment())
-{
-    app.MapOpenApi();
-}
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseHttpsRedirection();
 app.UseCors("AllowFrontend");
+app.UseAuthentication();
 app.UseAuthorization();
 app.MapControllers();
 

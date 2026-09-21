@@ -1,16 +1,15 @@
 import type { Student, StudentFormData } from '../types/student';
-
-const API_BASE_URL = 'https://localhost:7202/api/students';
+import { authApi } from './authApi';
 
 export const studentApi = {
   async getAll(): Promise<Student[]> {
-    const res = await fetch(API_BASE_URL);
+    const res = await authApi.request('/students');
     if (!res.ok) throw new Error('Failed to fetch students');
     return res.json();
   },
 
   async create(student: StudentFormData): Promise<Student> {
-    const res = await fetch(API_BASE_URL, {
+    const res = await authApi.request('/students', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(student),
@@ -23,7 +22,7 @@ export const studentApi = {
   },
 
   async delete(id: number): Promise<void> {
-    const res = await fetch(`${API_BASE_URL}/${id}`, {
+    const res = await authApi.request(`/students/${id}`, {
       method: 'DELETE',
     });
     if (!res.ok) throw new Error('Failed to delete student');

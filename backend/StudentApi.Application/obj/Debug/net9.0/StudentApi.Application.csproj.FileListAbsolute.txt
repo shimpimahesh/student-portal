@@ -1,0 +1,16 @@
+C:\ProjectArea\student-portal\backend\StudentApi.Application\bin\Debug\net9.0\StudentApi.Application.deps.json
+C:\ProjectArea\student-portal\backend\StudentApi.Application\bin\Debug\net9.0\StudentApi.Application.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Application\bin\Debug\net9.0\StudentApi.Application.pdb
+C:\ProjectArea\student-portal\backend\StudentApi.Application\bin\Debug\net9.0\StudentApi.Domain.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Application\bin\Debug\net9.0\StudentApi.Domain.pdb
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.csproj.AssemblyReference.cache
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.GeneratedMSBuildEditorConfig.editorconfig
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.AssemblyInfoInputs.cache
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.AssemblyInfo.cs
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.csproj.CoreCompileInputs.cache
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.sourcelink.json
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentA.14CD2074.Up2Date
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\refint\StudentApi.Application.dll
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\StudentApi.Application.pdb
+C:\ProjectArea\student-portal\backend\StudentApi.Application\obj\Debug\net9.0\ref\StudentApi.Application.dll

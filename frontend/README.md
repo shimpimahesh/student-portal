@@ -1,5 +1,9 @@
 # React + TypeScript + Vite
 
+## API configuration
+
+Development uses `.env.development` and points to the local HTTPS backend. For a production build, set `VITE_API_URL` to the deployed backend API URL, for example by copying `.env.example` to an environment-specific file or by supplying it in the build environment.
+
 This template provides a minimal setup to get React working in Vite with HMR and some Oxlint rules.
 
 Currently, two official plugins are available:

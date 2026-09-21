@@ -3,9 +3,14 @@ import type { Student, StudentFormData } from './types/student';
 import { studentApi } from './Api/studentApi';
 import { StudentForm } from './components/StudentForm';
 import { StudentList } from './components/StudentList';
-import { GraduationCap, AlertCircle, RefreshCw } from 'lucide-react';
+import { Login } from './components/Login';
+import { authApi } from './Api/authApi';
+import type { User } from './types/auth';
+import { GraduationCap, AlertCircle, RefreshCw, LogOut } from 'lucide-react';
 
 export default function App() {
+  const [user, setUser] = useState<User | null>(() => authApi.getStoredUser());
+  const [authLoading, setAuthLoading] = useState(true);
   const [students, setStudents] = useState<Student[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -25,8 +30,21 @@ export default function App() {
   };
 
   useEffect(() => {
-    fetchStudents();
+    authApi.getCurrentUser().then(setUser).finally(() => setAuthLoading(false));
   }, []);
+
+  useEffect(() => {
+    if (user) fetchStudents();
+  }, [user]);
+
+  if (authLoading) return <div className="min-h-screen flex items-center justify-center text-slate-500">Checking session...</div>;
+  if (!user) return <Login onLogin={async (credentials) => setUser(await authApi.login(credentials))} />;
+
+  const handleLogout = async () => {
+    await authApi.logout();
+    setUser(null);
+    setStudents([]);
+  };
 
   const handleAdd = async (newStudent: StudentFormData) => {
     const created = await studentApi.create(newStudent);
@@ -59,13 +77,11 @@ export default function App() {
               <p className="text-xs text-slate-500">Production-grade fullstack CRUD</p>
             </div>
           </div>
-          <button
-            onClick={fetchStudents}
-            className="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition"
-            title="Reload data"
-          >
-            <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-          </button>
+          <div className="flex items-center gap-3">
+            <div className="text-right hidden sm:block"><p className="text-sm font-medium text-slate-700">{user.displayName}</p><p className="text-xs text-slate-500">{user.email}</p></div>
+            <button onClick={fetchStudents} className="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition" title="Reload data"><RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} /></button>
+            <button onClick={handleLogout} className="p-2 text-slate-600 hover:bg-slate-200 rounded-lg transition" title="Sign out"><LogOut className="w-4 h-4" /></button>
+          </div>
         </header>
 
         {/* Global Error Notice */}

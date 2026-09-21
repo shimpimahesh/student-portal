@@ -1,80 +1,60 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using StudentApi.Data;
-using StudentApi.DTOs;
-using StudentApi.Models;
+using MediatR;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using StudentApi.Application.Features.Students;
 
 namespace StudentApi.Controllers;
 
 [ApiController]
+[Authorize]
 [Route("api/[controller]")]
-public class StudentsController : ControllerBase
+[Produces("application/json")]
+public sealed class StudentsController(ISender sender) : ControllerBase
 {
-    private readonly AppDbContext _context;
-    private readonly ILogger<StudentsController> _logger;
-
-    public StudentsController(AppDbContext context, ILogger<StudentsController> logger)
-    {
-        _context = context;
-        _logger = logger;
-    }
-
+    [AllowAnonymous]
     [HttpGet]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    public async Task<ActionResult<IEnumerable<StudentReadDto>>> GetAll(CancellationToken ct)
-    {
-        var students = await _context.Students
-            .AsNoTracking()
-            .OrderByDescending(s => s.Id)
-            .Select(s => new StudentReadDto(s.Id, s.Name, s.DateOfBirth, s.Phone))
-            .ToListAsync(ct);
+    [ProducesResponseType(typeof(IReadOnlyList<StudentDto>), StatusCodes.Status200OK)]
+    public async Task<ActionResult<IReadOnlyList<StudentDto>>> GetAll(CancellationToken cancellationToken)
+        => Ok(await sender.Send(new GetStudentsQuery(), cancellationToken));
 
-        return Ok(students);
-    }
-
+    [AllowAnonymous]
     [HttpGet("{id:int}")]
-    [ProducesResponseType(StatusCodes.Status200OK)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<ActionResult<StudentReadDto>> GetById(int id, CancellationToken ct)
+    [ProducesResponseType(typeof(StudentDto), StatusCodes.Status200OK)]
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<ActionResult<StudentDto>> GetById(int id, CancellationToken cancellationToken)
     {
-        var student = await _context.Students.FindAsync(new object[] { id }, ct);
-        if (student == null) return NotFound(new { message = $"Student with ID {id} not found." });
-
-        return Ok(new StudentReadDto(student.Id, student.Name, student.DateOfBirth, student.Phone));
+        var student = await sender.Send(new GetStudentQuery(id), cancellationToken);
+        return student is null
+            ? NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Student not found",
+                Detail = $"Student with ID {id} not found."
+            })
+            : Ok(student);
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpPost]
-    [ProducesResponseType(StatusCodes.Status201Created)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    public async Task<ActionResult<StudentReadDto>> Create([FromBody] StudentCreateDto dto, CancellationToken ct)
+    [ProducesResponseType(typeof(StudentDto), StatusCodes.Status201Created)]
+    public async Task<ActionResult<StudentDto>> Create([FromBody] CreateStudentRequest request, CancellationToken cancellationToken)
     {
-        if (!ModelState.IsValid) return BadRequest(ModelState);
-
-        var student = new Student
-        {
-            Name = dto.Name.Trim(),
-            DateOfBirth = dto.DateOfBirth,
-            Phone = dto.Phone.Trim()
-        };
-
-        _context.Students.Add(student);
-        await _context.SaveChangesAsync(ct);
-
-        var resultDto = new StudentReadDto(student.Id, student.Name, student.DateOfBirth, student.Phone);
-        return CreatedAtAction(nameof(GetById), new { id = student.Id }, resultDto);
+        var result = await sender.Send(new CreateStudentCommand(request.Name, request.DateOfBirth, request.Phone), cancellationToken);
+        return CreatedAtAction(nameof(GetById), new { id = result.Id }, result);
     }
 
+    [Authorize(Policy = "RequireAdminRole")]
     [HttpDelete("{id:int}")]
     [ProducesResponseType(StatusCodes.Status204NoContent)]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    public async Task<IActionResult> Delete(int id, CancellationToken ct)
-    {
-        var student = await _context.Students.FindAsync(new object[] { id }, ct);
-        if (student == null) return NotFound(new { message = $"Student with ID {id} not found." });
-
-        _context.Students.Remove(student);
-        await _context.SaveChangesAsync(ct);
-
-        return NoContent();
-    }
+    [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status404NotFound)]
+    public async Task<IActionResult> Delete(int id, CancellationToken cancellationToken)
+        => await sender.Send(new DeleteStudentCommand(id), cancellationToken)
+            ? NoContent()
+            : NotFound(new ProblemDetails
+            {
+                Status = StatusCodes.Status404NotFound,
+                Title = "Student not found",
+                Detail = $"Student with ID {id} not found."
+            });
 }
