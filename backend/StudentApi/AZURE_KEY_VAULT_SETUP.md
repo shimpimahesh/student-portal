@@ -47,12 +47,16 @@ az keyvault secret set --vault-name <your-keyvault-name> --name "Auth--SigningKe
 # Set database connection string (if applicable)
 az keyvault secret set --vault-name <your-keyvault-name> --name "ConnectionStrings--DefaultConnection" --value "your-connection-string"
 
+# Set the Azure Application Insights connection string
+az keyvault secret set --vault-name <your-keyvault-name> --name "ApplicationInsights--ConnectionString" --value "your-application-insights-connection-string"
+
 # Add other secrets as needed
 az keyvault secret set --vault-name <your-keyvault-name> --name "Auth--Issuer" --value "StudentApi"
 az keyvault secret set --vault-name <your-keyvault-name> --name "Auth--Audience" --value "StudentPortal"
 ```
 
 **Note:** Use double hyphens (`--`) in secret names to represent hierarchical configuration sections.
+The API loads the Application Insights connection string from this Key Vault secret after Key Vault configuration is added. Do not commit the connection string to `appsettings.json` or configure it with an environment variable when Key Vault is enabled.
 
 ### 3. Configure Access Permissions
 

@@ -1,4 +1,6 @@
 using StudentApi.Application.Common;
+using Microsoft.Extensions.Logging.Abstractions;
+using StudentApi.Application.Common;
 using StudentApi.Application.Features.Auth;
 
 namespace StudentApi.Tests.Application;
@@ -12,7 +14,7 @@ public sealed class AuthHandlersTests
         var service = new FakeAuthService { LoginResult = expected };
         using var cancellationSource = new CancellationTokenSource();
 
-        var result = await new LoginHandler(service)
+        var result = await new LoginHandler(service, NullLogger<LoginHandler>.Instance)
             .Handle(new LoginCommand("user@example.com", "password"), cancellationSource.Token);
 
         Assert.Same(expected, result);
@@ -27,7 +29,7 @@ public sealed class AuthHandlersTests
         var expected = CreateAuthResponse();
         var service = new FakeAuthService { RefreshResult = expected };
 
-        var result = await new RefreshHandler(service)
+        var result = await new RefreshHandler(service, NullLogger<RefreshHandler>.Instance)
             .Handle(new RefreshCommand("refresh-token"), CancellationToken.None);
 
         Assert.Same(expected, result);
@@ -37,7 +39,7 @@ public sealed class AuthHandlersTests
     [Fact]
     public async Task LoginHandler_returns_null_when_authentication_fails()
     {
-        var result = await new LoginHandler(new FakeAuthService())
+        var result = await new LoginHandler(new FakeAuthService(), NullLogger<LoginHandler>.Instance)
             .Handle(new LoginCommand("user@example.com", "wrong-password"), CancellationToken.None);
 
         Assert.Null(result);
@@ -46,7 +48,7 @@ public sealed class AuthHandlersTests
     [Fact]
     public async Task RefreshHandler_returns_null_when_refresh_fails()
     {
-        var result = await new RefreshHandler(new FakeAuthService())
+        var result = await new RefreshHandler(new FakeAuthService(), NullLogger<RefreshHandler>.Instance)
             .Handle(new RefreshCommand("expired-token"), CancellationToken.None);
 
         Assert.Null(result);
@@ -57,7 +59,7 @@ public sealed class AuthHandlersTests
     {
         var service = new FakeAuthService();
 
-        await new LogoutHandler(service)
+        await new LogoutHandler(service, NullLogger<LogoutHandler>.Instance)
             .Handle(new LogoutCommand("refresh-token"), CancellationToken.None);
 
         Assert.Equal("refresh-token", service.LoggedOutToken);
@@ -69,7 +71,7 @@ public sealed class AuthHandlersTests
         var expected = new UserDto("id", "user@example.com", "User", "User");
         var service = new FakeAuthService { CurrentUser = expected };
 
-        var result = await new GetCurrentUserHandler(service)
+        var result = await new GetCurrentUserHandler(service, NullLogger<GetCurrentUserHandler>.Instance)
             .Handle(new GetCurrentUserQuery(), CancellationToken.None);
 
         Assert.Equal(expected, result);

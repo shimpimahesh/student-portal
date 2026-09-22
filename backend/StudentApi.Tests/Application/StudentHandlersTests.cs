@@ -1,7 +1,9 @@
 using StudentApi.Application.Common;
+using StudentApi.Application.Common;
 using StudentApi.Application.Features.Students;
 using StudentApi.Domain.Entities;
 using StudentApi.Domain.Factories;
+using Microsoft.Extensions.Logging.Abstractions;
 
 namespace StudentApi.Tests.Application;
 
@@ -19,7 +21,7 @@ public sealed class StudentHandlersTests
             ]
         };
 
-        var result = await new GetStudentsHandler(repository)
+        var result = await new GetStudentsHandler(repository, NullLogger<GetStudentsHandler>.Instance)
             .Handle(new GetStudentsQuery(), CancellationToken.None);
 
         Assert.Equal(2, result.Count);
@@ -31,7 +33,7 @@ public sealed class StudentHandlersTests
     [Fact]
     public async Task GetStudentHandler_returns_null_when_student_does_not_exist()
     {
-        var result = await new GetStudentHandler(new FakeStudentRepository())
+        var result = await new GetStudentHandler(new FakeStudentRepository(), NullLogger<GetStudentHandler>.Instance)
             .Handle(new GetStudentQuery(42), CancellationToken.None);
 
         Assert.Null(result);
@@ -43,7 +45,7 @@ public sealed class StudentHandlersTests
         var student = Student.Create("Alice", new DateOnly(2000, 1, 2), "555-0100");
         var repository = new FakeStudentRepository { Students = [student] };
 
-        var result = await new GetStudentHandler(repository)
+        var result = await new GetStudentHandler(repository, NullLogger<GetStudentHandler>.Instance)
             .Handle(new GetStudentQuery(student.Id), CancellationToken.None);
 
         Assert.NotNull(result);
@@ -55,7 +57,7 @@ public sealed class StudentHandlersTests
     [Fact]
     public async Task GetStudentsHandler_returns_empty_list_when_repository_is_empty()
     {
-        var result = await new GetStudentsHandler(new FakeStudentRepository())
+        var result = await new GetStudentsHandler(new FakeStudentRepository(), NullLogger<GetStudentsHandler>.Instance)
             .Handle(new GetStudentsQuery(), CancellationToken.None);
 
         Assert.Empty(result);
@@ -67,7 +69,7 @@ public sealed class StudentHandlersTests
         var repository = new FakeStudentRepository();
         var dateOfBirth = new DateOnly(1999, 12, 31);
 
-        var result = await new CreateStudentHandler(repository, new StudentFactory())
+        var result = await new CreateStudentHandler(repository, new StudentFactory(), NullLogger<CreateStudentHandler>.Instance)
             .Handle(new CreateStudentCommand(" Alice ", dateOfBirth, " 555-0100 "), CancellationToken.None);
 
         var student = Assert.Single(repository.AddedStudents);
@@ -82,7 +84,7 @@ public sealed class StudentHandlersTests
     {
         var repository = new FakeStudentRepository();
 
-        var result = await new DeleteStudentHandler(repository)
+        var result = await new DeleteStudentHandler(repository, NullLogger<DeleteStudentHandler>.Instance)
             .Handle(new DeleteStudentCommand(42), CancellationToken.None);
 
         Assert.False(result);
@@ -96,7 +98,7 @@ public sealed class StudentHandlersTests
         var student = Student.Create("Alice", new DateOnly(2000, 1, 2), "555-0100");
         var repository = new FakeStudentRepository { Students = [student] };
 
-        var result = await new DeleteStudentHandler(repository)
+        var result = await new DeleteStudentHandler(repository, NullLogger<DeleteStudentHandler>.Instance)
             .Handle(new DeleteStudentCommand(student.Id), CancellationToken.None);
 
         Assert.True(result);

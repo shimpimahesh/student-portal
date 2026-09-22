@@ -5,13 +5,14 @@ using System.Security.Cryptography;
 using System.Text;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using StudentApi.Application.Common;
 using StudentApi.Application.Features.Auth;
 
 namespace StudentApi.Infrastructure.Authentication;
 
-public sealed class AuthService(IOptions<AzureAdOptions> azureAdOptions) : IAuthService
+public sealed class AuthService(IOptions<AzureAdOptions> azureAdOptions, ILogger<AuthService> logger) : IAuthService
 {
     private sealed record RefreshTokenEntry(DateTime ExpiresAt, UserDto User);
 
@@ -39,10 +40,16 @@ public sealed class AuthService(IOptions<AzureAdOptions> azureAdOptions) : IAuth
                 "User");
 
             // Microsoft Entra ID creates and signs this access JWT. The API only validates it.
+            logger.LogInformation("Microsoft Entra authentication succeeded for {Username}", email);
             return new AuthResponse(result.AccessToken, string.Empty, result.ExpiresOn.UtcDateTime, user);
         }
-        catch (MsalException)
+        catch (MsalException exception)
         {
+            logger.LogWarning(
+                exception,
+                "Microsoft Entra authentication failed for {Username} with error code {ErrorCode}",
+                username,
+                exception.ErrorCode);
             return null;
         }
     }

@@ -2,6 +2,7 @@ using MediatR;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 using System.Security.Claims;
 using StudentApi.Application.Features.Auth;
 
@@ -10,7 +11,7 @@ namespace StudentApi.Controllers;
 [ApiController]
 [Route("api/[controller]")]
 [Produces("application/json")]
-public sealed class AuthController(ISender sender) : ControllerBase
+public sealed class AuthController(ISender sender, ILogger<AuthController> logger) : ControllerBase
 {
     [AllowAnonymous]
     [HttpPost("login")]
@@ -19,6 +20,11 @@ public sealed class AuthController(ISender sender) : ControllerBase
     public async Task<ActionResult<AuthResponse>> Login([FromBody] LoginRequest request, CancellationToken cancellationToken)
     {
         var response = await sender.Send(new LoginCommand(request.Username, request.Password), cancellationToken);
+        if (response is null)
+        {
+            logger.LogWarning("Authentication failed for username {Username}", request.Username);
+        }
+
         return response is null
             ? Unauthorized(new ProblemDetails
             {
@@ -36,6 +42,11 @@ public sealed class AuthController(ISender sender) : ControllerBase
     public async Task<ActionResult<AuthResponse>> Refresh([FromBody] RefreshRequest request, CancellationToken cancellationToken)
     {
         var response = await sender.Send(new RefreshCommand(request.RefreshToken), cancellationToken);
+        if (response is null)
+        {
+            logger.LogWarning("Refresh token authentication failed");
+        }
+
         return response is null
             ? Unauthorized(new ProblemDetails
             {
@@ -52,6 +63,7 @@ public sealed class AuthController(ISender sender) : ControllerBase
     public async Task<IActionResult> Logout([FromBody] RefreshRequest request, CancellationToken cancellationToken)
     {
         await sender.Send(new LogoutCommand(request.RefreshToken), cancellationToken);
+        logger.LogInformation("User logout request processed");
         return NoContent();
     }
 
@@ -68,6 +80,7 @@ public sealed class AuthController(ISender sender) : ControllerBase
             User.FindAll(ClaimTypes.Role).Select(claim => claim.Value).ToArray(),
             User.FindFirstValue("tid"));
 
+        logger.LogInformation("Current user profile requested");
         return Ok(response);
     }
 }

@@ -4,8 +4,8 @@ frontend/dist/
 frontend/dist-ssr/
 
 # .NET build output and local tooling
-backend/StudentApi/bin/
-backend/StudentApi/obj/
+bin/
+obj/
 backend/StudentApi/.vs/
 backend/StudentApi/*.csproj.user
 
